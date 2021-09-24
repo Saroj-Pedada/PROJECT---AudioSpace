@@ -1,9 +1,0 @@
-body {
-    background-image: linear-gradient(45deg,#43cea2,#185a9d);
-    background-image: url("images/texture1.png");
-}
-
-.logo {
-    width: 125px;
-    border-radius: 25%;
-}
