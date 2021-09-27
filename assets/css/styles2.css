@@ -40,8 +40,7 @@ a:visited {
     font-size: 120%;
     text-align: center;
     color: rgb(255, 255, 255);
-    position:relative;
-    margin-top:100px;
+    position: fixed;
     padding: 10px 0px 10px 0px;
     left: 0;
     bottom: 0;
@@ -58,17 +57,4 @@ a:visited {
 .emails {
     text-align: left;
     float: left;
-}
-
-.topics {
-    padding: 10px 10px 10px 10px;
-    margin: 20px 10px 10px 10px;
-    display: block;
-    text-align: center;
-    height: 50px;
-    border: 2px solid white;
-    color: white;
-    font-family: 'Courier New', Courier, monospace;
-    background-image: linear-gradient(45deg,#e042d865,#2be2d37c);
-    font-weight: bold;
 }
