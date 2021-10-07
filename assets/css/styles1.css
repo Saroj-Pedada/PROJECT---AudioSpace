@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Train+One&display=swap');
+
 body {
     background-image: linear-gradient(45deg,#43cea2,#185a9d);
     background-image: url("images/texture1.png");
 }
 
 .logo {
+    float: left;
     width: 175px;
     border-radius: 20%;
     border-color: white;
@@ -11,7 +14,7 @@ body {
 
 .propic {
     float: right;
-    width: 5%;
+    width: 8%;
     border-radius: 100%;
     border: 10px;
 }
@@ -22,17 +25,17 @@ body {
 
 a {
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.726);
+    color: rgba(255, 255, 255, 0.788);
 
 }
 
 a:hover {
     text-decoration:underline;
-    color: rgba(255, 255, 255, 0.726);
+    color: rgb(255, 255, 255);
 }
 
 a:visited {
-    color: rgba(255, 255, 255, 0.726);
+    color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
@@ -61,14 +64,38 @@ a:visited {
 }
 
 .topics {
-    padding: 10px 10px 10px 10px;
-    margin: 20px 10px 10px 10px;
-    display: block;
+    padding: 10px 10px 10px;
+    margin: 20px auto;
+    border-radius: 25px 25px 25px 25px;
     text-align: center;
-    height: 50px;
+    height: 25px;
     border: 2px solid white;
     color: white;
+    width: 30%;
+    font-size: 120%;
     font-family: 'Courier New', Courier, monospace;
     background-image: linear-gradient(45deg,#e042d865,#2be2d37c);
     font-weight: bold;
+}
+
+.profilepic {
+    margin-bottom: 150px;
+    color: white;
+    font-size: 200%;
+}
+
+.diff {
+    font-family: 'Train One', cursive;
+    margin-left: 150px;
+    padding : 50px 50px 25px 50px;
+    text-align: center;
+    color: white;
+    text-decoration: none;
+    background-color: none;
+    transition: linear;
+}
+
+.diff:hover {
+    text-decoration: none;
+    background-color: rgba(0, 3, 2, 0.158);
 }

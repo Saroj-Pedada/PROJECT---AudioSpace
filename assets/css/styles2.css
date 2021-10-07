@@ -11,7 +11,7 @@ body {
 
 .propic {
     float: right;
-    width: 5%;
+    width: 8%;
     border-radius: 100%;
     border: 10px;
 }
@@ -57,4 +57,19 @@ a:visited {
 .emails {
     text-align: left;
     float: left;
+}
+
+.my-profile {
+    padding: 50px;
+    background-image: url("images/greybox.jpg");
+    width: 50%;
+    height: 100px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.name {
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bold;
+    font-size: 150%;
 }
