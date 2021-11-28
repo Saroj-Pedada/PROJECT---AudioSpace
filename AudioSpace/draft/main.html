@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="images/favicon/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="android-chrome-192x192" sizes="192x192" href="images/favicon/apple-touch-icon.png">
+<link rel="android-chrome-512x512" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+<link rel="manifest" href="images/favicon/site.webmanifest">
+<title>AudioSpace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" id="applicationStylesheet" href="main.css"/>
+<script id="applicationScript" type="text/javascript" src="main.js"></script>
+</head>
+<body>
+<div id="main">
+	<div id="website">
+		<img id="bg" src="images/bg.png" srcset="images/bg.png 1x, images/bg@2x.png 2x">
+			
+		<div id="mountains">
+			<img id="mtn_8" src="images/mtn_8.png" srcset="images/mtn_8.png 1x, images/mtn_8@2x.png 2x">
+				
+			<img id="mtn_7" src="images/mtn_7.png" srcset="images/mtn_7.png 1x, images/mtn_7@2x.png 2x">
+				
+			<img id="mtn_6" src="images/mtn_6.png" srcset="images/mtn_6.png 1x, images/mtn_6@2x.png 2x">
+				
+			<img id="mtn_5" src="images/mtn_5.png" srcset="images/mtn_5.png 1x, images/mtn_5@2x.png 2x">
+				
+			<img id="mtn_4" src="images/mtn_4.png" srcset="images/mtn_4.png 1x, images/mtn_4@2x.png 2x">
+				
+			<img id="mtn_3" src="images/mtn_3.png" srcset="images/mtn_3.png 1x, images/mtn_3@2x.png 2x">
+				
+			<img id="mtn_2" src="images/mtn_2.png" srcset="images/mtn_2.png 1x, images/mtn_2@2x.png 2x">
+				
+			<img id="mtn_1" src="images/mtn_1.png" srcset="images/mtn_1.png 1x, images/mtn_1@2x.png 2x">
+				
+		</div>
+		<div id="Meet_new_people_everyday_Liste">
+			<span>Meet new people everyday!<br/>Listen live podcasts from all around the world.</span>
+		</div>
+		<div class="sign_in_box">
+			<div class="sign_in_container animate__animated animate__fadeInUp" id="sign_in_container">
+				<div class="sign_in_form">
+					<br><br><h1>Sign in</h1><br>
+					<span>Welcome back!</span>
+					<form>
+						<div class="input_box">
+							<label><img src="images/icons/mail.png" class="mail"></label>
+							<input type="email" placeholder="Email" required>
+						</div>
+						<div class="input_box">
+							<label><img src="images/icons/password.png" class="password"></label>
+							<input type="password" placeholder="Password" required>
+						</div>
+						<div class="input_box">
+							<input type="submit" value="Login">
+						</div>
+						<br><p class="forgot"><a href="#">Forgot Password?</a></p>
+					</form>
+					<div class="social">
+						<a href="https://google.com"><img src="images/icons/google logo.png" id="google_logo"></a>
+						&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+						<a href="https://facebook.com"><img src="images/icons/facebook logo.png" id="facebook_logo"></a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="sign_up_box">
+			<div class="sign_up_container animate__animated animate__fadeInUp" id="sign_up_container">
+				<div class="sign_up_form">
+					<br><br><h1>Sign up</h1><br>
+					<span>And enter a whole new world!</span>
+					<form>
+						<div class="input_box">
+							<label><img src="images/icons/user.png" class="text"></label>
+							<input type="text" placeholder="Name" required>
+						</div>
+						<div class="input_box">
+							<label><img src="images/icons/mail.png" class="mail"></label>
+							<input type="email" placeholder="Email" required>
+						</div>
+						<div class="input_box">
+							<label><img src="images/icons/password.png" class="password"></label>
+							<input type="password" placeholder="Password" id="password" required>
+						</div>
+						<div class="input_box">
+							<input type="password" placeholder="Confirm Password" id="confirm_password" required>
+						</div>
+						<div class="input_box">
+							<input type="submit" value="Login">
+						</div>
+					</form>
+					<div class="social">
+						<a href="https://google.com"><img src="images/icons/google logo.png" id="google_logo"></a>
+						&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+						<a href="https://facebook.com"><img src="images/icons/facebook logo.png" id="facebook_logo"></a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<button id="Sign_In" class="buttonGrow" onclick="open_form1()">
+			<span>Sign In</span>
+		</button>
+		<button id="Sign_Up" class="buttonGrow" onclick="open_form2()">
+			<span>Sign Up</span>
+		</button>
+		<a href="#main"><img id="Logo" src="images/Logo.png" srcset="images/Logo.png 1x, images/Logo@2x.png 2x"></a>
+			
+		<a id="Enter_as_guest" class="buttonGrow" href="homepage_guest.html">
+			<span>Enter as guest</span>
+		</a>
+		<button id="scroll" class="buttonHang" href="blank">
+			<div id="Scroll_z">
+				<span>Scroll</span>
+			</div>
+			<svg class="Polygon_1" viewBox="0 0 25 23">
+				<path id="Polygon_1" d="M 12.49999904632568 0 L 25 23 L 0 23 Z">
+				</path>
+			</svg>
+		</button>
+	</div>
+</div>
+<script type="text/javascript">
+	let main = document.getElementById('main');
+	let website = document.getElementById('website');
+	let bg = document.getElementById('bg');
+	let logo = document.getElementById('Logo');
+	let scroll = document.getElementById('scroll');
+	let mtn_1 = document.getElementById('mtn_1');
+	let mtn_2 = document.getElementById('mtn_2');
+	let mtn_3 = document.getElementById('mtn_3');
+	let mtn_4 = document.getElementById('mtn_4');
+	let mtn_5 = document.getElementById('mtn_5');
+	let mtn_6 = document.getElementById('mtn_6');
+	let mtn_7 = document.getElementById('mtn_7');
+	let mtn_8 = document.getElementById('mtn_8');
+	let signin = document.getElementById('Sign_In');
+	let signup = document.getElementById('Sign_Up');
+	let guest = document.getElementById('Enter_as_guest');
+	let caption = document.getElementById('Meet_new_people_everyday_Liste');
+
+	window.addEventListener('scroll', function(){
+		let value = window.scrollY;
+		if (main.style.height > 1155 + 'px'){
+			main.style.height = 2025 - value * 21 + 'px';
+		}else  {
+			main.style.height = 1155 + 'px';
+		}
+		website.style.top = 0 + value * 1 + 'px';
+		bg.style.top = 0 + value * -10 + 'px';
+		logo.style.height = 204 + value * 5 + 'px';
+		logo.style.width = 204 + value * 5 + 'px';
+		logo.style.left = 858 - value * 2.5 + 'px';
+		logo.style.marginTop = 0 + value/75 + '%';
+		mtn_8.style.top = 66 + value * 2 + 'px';
+		mtn_7.style.top = 47 + value * 2.1 + 'px';
+		mtn_6.style.top = 103 + value * 2.3 + 'px';
+		mtn_5.style.top = 128 + value * 1 + 'px';
+		mtn_4.style.top = 0 + value * 1.5 + 'px';
+		mtn_3.style.top = 229 + value * -1 + 'px';
+		mtn_2.style.top = 328 + value * -3 + 'px';
+		mtn_1.style.top = 304 + value * -7 + 'px';
+		scroll.style.top = 960 + value * -5 + 'px';
+		scroll.style.opacity = 1 - value * 0.03;
+		scroll.style.zIndex = 8 - value * 0.15;
+		signin.style.top = 1212 + value * -12 + 'px';
+		signup.style.top = 1212 + value * -12 + 'px';
+		guest.style.top = 1333 + value * -12 + 'px';
+		signin.style.opacity = -0.5 + value * 0.04;
+		signup.style.opacity = -0.5 + value * 0.04;
+		guest.style.opacity = -0.5 + value * 0.04;
+		caption.style.opacity = 1 - value * 0.03;
+	})
+
+	const scrolldown = document.getElementById('scroll');
+	scrolldown.addEventListener("click", function(){
+		window.scrollTo(0, 1155);
+	})
+
+	function open_form1(){
+		document.getElementById('sign_in_container').style.display = "flex"
+	}
+	function open_form2(){
+		document.getElementById('sign_up_container').style.display = "flex"
+	}
+
+	var boxArray = ['sign_in_container', 'sign_up_container'];
+	window.addEventListener('mouseup', function (event) {
+		for (var i=0; i < boxArray.length; i++) {
+			var box = document.getElementById(boxArray[i]);
+			if (event.target != box && event.target.parentNode != box && event.target.parentNode.parentNode != box
+			&& event.target.parentNode.parentNode.parentNode != box
+			&& event.target.parentNode.parentNode.parentNode.parentNode != box
+			&& event.target.parentNode.parentNode.parentNode.parentNode.parentNode != box) {
+				box.style.display = 'none';
+			}
+		}
+
+	});
+
+	var password = document.getElementById("password")
+ 		, confirm_password = document.getElementById("confirm_password");
+
+	function validatePassword(){
+  		if(password.value != confirm_password.value) {
+    		confirm_password.setCustomValidity("Passwords Don't Match");
+  		} else {
+    		confirm_password.setCustomValidity('');
+  		}
+	}
+
+	password.onchange = validatePassword;
+	confirm_password.onkeyup = validatePassword;
+</script>
+</body>
+</html>
