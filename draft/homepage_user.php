@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" type="text/css" id="applicationStylesheet" href="homepage_user.css"/>
+<script id="applicationScript" type="text/javascript" src="homepage_user.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!-- The below code is fade in and fade out code which is glitching
+<script>
+	$(window).on("load",function() {
+		$(window).scroll(function() {
+    		var windowBottom = $(this).scrollTop() + $(this).innerHeight();
+    		$(".ss").each(function() {
+      			/* Check the location of each desired element */
+      			var objectBottom = $(this).offset().top + $(this).outerHeight();
+				
+      			/* If the element is completely within bounds of the window, fade it in */
+      			if (objectBottom < windowBottom) { //object comes into view (scrolling down)
+        			if ($(this).css("opacity")==0) {$(this).fadeTo(500,1);}
+      			}
+				else { //object goes out of view (scrolling up)
+        			if ($(this).css("opacity")==1) {$(this).fadeTo(500,0);}
+      			}
+    		});
+  		}).scroll(); //invoke scroll-handler on page-load
+	});
+</script>
+-->
+</head>
+<body>
+<?php include('signup.php') ?>
+<?php include('login.php') ?>
+<div id="homepage_user">
+	<div id="website">
+		<img id="bg" src="images/bg.png" srcset="images/bg.png 1x, images/bg@2x.png 2x">
+		<div id="Navbar">
+			<a href="" id="audiospace">
+				Audio<span class="space">Space</span>
+			</a>
+			<div id="name">
+				<span id="user-name">data</span>
+			</div>
+		</div>
+		<div id="ss-box">
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room1">Bollywood Pop Songs</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room2">Just for Fun</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room3">The Musafir Stories</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room4">Political Debates</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room5">Finance Society</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room6">Learning Mahabharatha in English</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room7">Chit Chat</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room8">Standup Comedy</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room9">Party Music Room</a>
+			</div>
+			<div id="ss" class="ss">
+				<a href="http://localhost:3000/room10">Musicians' Assembly</a>
+			</div>
+		</div>
+		<!--	
+		<div id="Sample_Spaces">
+			<div id="row_4">
+				<svg class="ID16_z">
+					<linearGradient id="ID16_z" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID16_z" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID16_">
+					<span>16</span>
+				</div>
+				<svg class="ID15_">
+					<linearGradient id="ID15_" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID15_" rx="50" ry="50" x="0" y="0" width="370" height="359">
+					</rect>
+				</svg>
+				<div id="ID15_ba">
+					<span>15</span>
+				</div>
+				<svg class="ID14_">
+					<linearGradient id="ID14_" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID14_" rx="50" ry="50" x="0" y="0" width="372" height="359">
+					</rect>
+				</svg>
+				<div id="ID14_ba">
+					<span>14</span>
+				</div>
+				<svg class="ID13_">
+					<linearGradient id="ID13_" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID13_" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID13_ba">
+					<span>13</span>
+				</div>
+			</div>
+			<div id="row_3">
+				<svg class="ID12_bc">
+					<linearGradient id="ID12_bc" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID12_bc" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID12_bd">
+					<span>12</span>
+				</div>
+				<svg class="ID11_bf">
+					<linearGradient id="ID11_bf" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID11_bf" rx="50" ry="50" x="0" y="0" width="370" height="359">
+					</rect>
+				</svg>
+				<div id="ID11_bg">
+					<span>11</span>
+				</div>
+				<svg class="ID10_bi">
+					<linearGradient id="ID10_bi" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID10_bi" rx="50" ry="50" x="0" y="0" width="372" height="359">
+					</rect>
+				</svg>
+				<div id="ID10_bj">
+					<span>10</span>
+				</div>
+				<svg class="ID9_bl">
+					<linearGradient id="ID9_bl" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID9_bl" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID9_bm">
+					<span>9</span>
+				</div>
+			</div>
+			<div id="row_2">
+				<svg class="ID8_bp">
+					<linearGradient id="ID8_bp" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID8_bp" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID8_bq">
+					<span>8</span>
+				</div>
+				<svg class="ID7_bs">
+					<linearGradient id="ID7_bs" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID7_bs" rx="50" ry="50" x="0" y="0" width="370" height="359">
+					</rect>
+				</svg>
+				<div id="ID7_bt">
+					<span>7</span>
+				</div>
+				<svg class="ID6_bv">
+					<linearGradient id="ID6_bv" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID6_bv" rx="50" ry="50" x="0" y="0" width="372" height="359">
+					</rect>
+				</svg>
+				<div id="ID6_bw">
+					<span>6</span>
+				</div>
+				<svg class="ID5_by">
+					<linearGradient id="ID5_by" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID5_by" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID5_bz">
+					<span>5</span>
+				</div>
+			</div>
+			<div id="row_1">
+				<svg class="ID4_b">
+					<linearGradient id="ID4_b" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID4_b" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID4_ca">
+					<span>4</span>
+				</div>
+				<svg class="ID3_b">
+					<linearGradient id="ID3_b" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID3_b" rx="50" ry="50" x="0" y="0" width="370" height="359">
+					</rect>
+				</svg>
+				<div id="ID3_ca">
+					<span>3</span>
+				</div>
+				<svg class="ID2_b">
+					<linearGradient id="ID2_b" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID2_b" rx="50" ry="50" x="0" y="0" width="372" height="359">
+					</rect>
+				</svg>
+				<div id="ID2_ca">
+					<span>2</span>
+				</div>
+				<svg class="ID1_cb">
+					<linearGradient id="ID1_cb" spreadMethod="pad" x1="0.029" x2="0.963" y1="0" y2="0.957">
+						<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+						<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+					</linearGradient>
+					<rect id="ID1_cb" rx="50" ry="50" x="0" y="0" width="371" height="359">
+					</rect>
+				</svg>
+				<div id="ID1_cc">
+					<span>1</span>
+				</div>
+			</div>
+		</div>
+		-->
+		<!--
+		<div id="Navbar">
+			<div onclick="application.goToTargetView(event)" id="Name">
+				<span>Name</span>
+			</div>
+			<div onclick="application.goToTargetView(event)" id="AudioSpace">
+				<div id="Space">
+					<span>Space</span>
+				</div>
+				<div id="Audio">
+					<span>Audio</span>
+				</div>
+			</div>
+		</div>
+		<div id="Overlay">
+			<svg class="Overlay_bg_ck">
+				<linearGradient id="Overlay_bg_ck" spreadMethod="pad" x1="0.5" x2="0.5" y1="0" y2="1">
+					<stop offset="0" stop-color="#fff" stop-opacity="0.051"></stop>
+					<stop offset="1" stop-color="#808080" stop-opacity="0.4"></stop>
+				</linearGradient>
+				<rect id="Overlay_bg_ck" rx="0" ry="0" x="0" y="0" width="2018" height="1202">
+				</rect>
+			</svg>
+			<div id="Logout">
+				<span>Logout</span>
+			</div>
+			<div id="My_Profile">
+				<span>My Profile</span>
+			</div>
+			<div id="cross">
+				<svg class="Line_1" viewBox="0 0 127.049 0">
+					<path id="Line_1" d="M 0 0 L 127.0486297607422 1.255107129338739e-13">
+					</path>
+				</svg>
+				<svg class="Line_2" viewBox="0 0 127.049 0">
+					<path id="Line_2" d="M 0 1.256772463875677e-13 L 127.0486297607422 0">
+					</path>
+				</svg>
+			</div>
+		</div>
+	</div>
+</div>
+-->
+</body>
+</html>

@@ -1,0 +1,84 @@
+body {
+    background-color: antiquewhite;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+.split {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.user-video {
+    text-align: center;
+    background-color: aqua;
+    border-radius: 100%;
+    margin: 50px;
+    margin-left: 100px;
+    width: 400px;
+    height: 400px;
+}
+
+#bg {
+	position: absolute;
+	width: 1920px;
+	height: 1920px;
+	left: 0px;
+	top: 0px;
+	overflow: hidden;
+	z-index: -1;
+}
+
+.controls {
+    width: 90%;
+    padding: 12px;
+    display: flex;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+}
+
+.remote-video {
+    background-color: aqua;
+    border-radius: 25px;
+    margin: 50px;
+    width: 200px;
+    height: 200px;
+}
+
+.remote-video-container {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.button {
+    background-color: indigo;
+    color: white;
+    padding: 14px;
+    box-sizing: border-box;
+    font-size: 18px;
+    font-family: tahoma;
+    border: none;
+    border-radius: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
