@@ -10,11 +10,11 @@
   },
   "scripts": {
     "dev": "concurrently -k -n server,client -c magenta,cyan \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "node --watch --disable-warning=ExperimentalWarning server/index.ts",
+    "dev:server": "node --watch --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/index.ts",
     "dev:client": "vite",
     "build": "vite build",
     "postinstall": "npm run build",
-    "start": "NODE_ENV=production node --disable-warning=ExperimentalWarning server/index.ts",
+    "start": "NODE_ENV=production node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/index.ts",
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.server.json"
   },
   "dependencies": {

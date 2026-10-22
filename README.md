@@ -53,10 +53,12 @@ public/      Optimised WebP artwork and favicons
 
 ## Configuration
 
+Set these in your shell or in a `.env` file (see `.env.example`; `.env` is git-ignored).
+
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port |
-| `SESSION_SECRET` | random per boot | Signs session cookies. Set it in production |
+| `SESSION_SECRET` | generated once, saved in `data/session-secret` | Signs session cookies. Set it in production |
 | `ADMIN_PASSWORD` | `passoword` | Password given to the admin account **when it's first created**. Set it in production; the default is in a public repo |
 | `DB_PATH` | `data/audiospace.db` | SQLite file location |
 | `ICE_SERVERS` | Google STUN | JSON array of `RTCIceServer`s. Add a TURN server for users behind strict NATs |

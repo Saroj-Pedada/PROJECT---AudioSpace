@@ -6,7 +6,9 @@ import session from 'express-session';
 import type { Room, User } from '../shared/protocol.ts';
 
 const dbPath = process.env.DB_PATH ?? path.join(import.meta.dirname, '..', 'data', 'audiospace.db');
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+/** Where the database and other local state (like the generated session secret) live. */
+export const DATA_DIR = path.dirname(dbPath);
+fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new DatabaseSync(dbPath);
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');

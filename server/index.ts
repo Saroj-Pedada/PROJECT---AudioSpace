@@ -13,7 +13,7 @@ import {
 import { avatarSvg } from './avatars.ts';
 import { addChatMessage, chatHistory, clearChat } from './chat.ts';
 import {
-  SqliteSessionStore, authenticate, changePassword, countOwnedRooms, createPrivateRoom, createUser, deletePrivateRoom,
+  DATA_DIR, SqliteSessionStore, authenticate, changePassword, countOwnedRooms, createPrivateRoom, createUser, deletePrivateRoom,
   endOtherSessions, ensureAdmin, getPrivateRoom, getUser, grantRoomAccess, hasRoomAccess, isNameAvailable,
   listPrivateRooms, renameUser, type PrivateRoom,
 } from './db.ts';
@@ -50,8 +50,17 @@ const ICE_SERVERS: unknown[] = process.env.ICE_SERVERS
   ? JSON.parse(process.env.ICE_SERVERS)
   : [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
 
-if (IS_PRODUCTION && !process.env.SESSION_SECRET) {
-  console.warn('SESSION_SECRET is not set; sessions will not survive a restart.');
+/** SESSION_SECRET if set; otherwise one generated on first boot and kept next to the database. */
+function sessionSecret(): string {
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  const file = path.join(DATA_DIR, 'session-secret');
+  try {
+    return fs.readFileSync(file, 'utf8').trim();
+  } catch {
+    const secret = crypto.randomBytes(32).toString('hex');
+    fs.writeFileSync(file, secret, { mode: 0o600 });
+    return secret;
+  }
 }
 if (IS_PRODUCTION && !process.env.ADMIN_PASSWORD) {
   console.warn('ADMIN_PASSWORD is not set; the admin account uses the default password. Set it, or change it from the profile page.');
@@ -67,7 +76,7 @@ if (IS_PRODUCTION) app.set('trust proxy', 1);
 
 const sessionMiddleware = session({
   store: new SqliteSessionStore(),
-  secret: process.env.SESSION_SECRET ?? crypto.randomBytes(32).toString('hex'),
+  secret: sessionSecret(),
   name: 'audiospace.sid',
   resave: false,
   saveUninitialized: false,
