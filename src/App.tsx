@@ -5,6 +5,7 @@ import Spinner from './components/Spinner.tsx';
 import Landing from './pages/Landing.tsx';
 import Lobby from './pages/Lobby.tsx';
 import Room from './pages/Room.tsx';
+import Profile from './pages/Profile.tsx';
 import NotFound from './pages/NotFound.tsx';
 
 function FullPageSpinner() {
@@ -19,25 +20,20 @@ function RequireUser({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const location = useLocation();
   if (user === undefined) return <FullPageSpinner />;
+  // Send them home to sign in, remembering where they were headed.
   if (!user) return <Navigate to="/" replace state={{ from: location.pathname }} />;
   return children;
 }
 
-function GuestOnly({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const location = useLocation();
-  if (user === undefined) return <FullPageSpinner />;
-  // After signing in, return to the room link that sent them here, if any.
-  if (user) return <Navigate to={(location.state as { from?: string } | null)?.from ?? '/rooms'} replace />;
-  return children;
-}
-
 export default function App() {
+  const { user } = useAuth();
   return (
     <Routes>
-      <Route path="/" element={<GuestOnly><Landing /></GuestOnly>} />
+      {/* The landing page is open to everyone, signed in or not. */}
+      <Route path="/" element={user === undefined ? <FullPageSpinner /> : <Landing />} />
       <Route path="/rooms" element={<RequireUser><Lobby /></RequireUser>} />
       <Route path="/rooms/:roomId" element={<RequireUser><Room /></RequireUser>} />
+      <Route path="/profile" element={<RequireUser><Profile /></RequireUser>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

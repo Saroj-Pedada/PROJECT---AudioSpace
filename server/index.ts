@@ -4,28 +4,46 @@ import crypto from 'node:crypto';
 import http from 'node:http';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import session from 'express-session';
-import { Server } from 'socket.io';
-import type { ClientToServerEvents, ServerToClientEvents, User } from '../shared/protocol.ts';
-import { authenticate, createUser, SqliteSessionStore } from './db.ts';
-import { addMember, findByUserKey, getRoom, getRoomState, removeMember, summaries, toMember } from './rooms.ts';
+import { Server, type Socket } from 'socket.io';
+import type { ClientToServerEvents, LobbyRooms, Member, Room, RoomDetails, ServerToClientEvents, User } from '../shared/protocol.ts';
+import {
+  CHAT_MESSAGE_MAX, EMAIL_PATTERN, MAX_PRIVATE_ROOMS_PER_USER, PASSWORD_MIN, ROOM_DESCRIPTION_MAX, ROOM_EMOJIS,
+  ROOM_NAME_MAX, isValidPasscode, normalizeName, validateName,
+} from '../shared/validation.ts';
+import { avatarSvg } from './avatars.ts';
+import { addChatMessage, chatHistory, clearChat } from './chat.ts';
+import {
+  SqliteSessionStore, authenticate, changePassword, countOwnedRooms, createPrivateRoom, createUser, deletePrivateRoom,
+  endOtherSessions, ensureAdmin, getPrivateRoom, getUser, grantRoomAccess, hasRoomAccess, isNameAvailable,
+  listPrivateRooms, renameUser, type PrivateRoom,
+} from './db.ts';
+import {
+  PUBLIC_ROOMS, addMember, findByUserId, getPublicRoom, getRoomState, memberIds, removeMember, summarize,
+} from './rooms.ts';
 
 declare module 'express-session' {
   interface SessionData {
-    user: User;
+    userId: number;
   }
 }
 
 interface SocketData {
-  user: User;
-  /** Identifies the person across tabs and devices: their account, or their guest session. */
-  userKey: string;
+  userId: number;
   roomId?: string;
+  /** Owner of the private room this socket is in, if any. */
+  roomOwnerId?: number;
+  chatTimes?: number[];
 }
+
+type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
 const PORT = Number(process.env.PORT ?? 3000);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const CLIENT_DIR = path.join(import.meta.dirname, '..', 'dist');
 const LOBBY = 'lobby';
+
+const ADMIN_EMAIL = 'sarojp.dev@gmail.com';
+const DEFAULT_ADMIN_PASSWORD = 'passoword';
 
 // STUN is enough on most networks; set ICE_SERVERS to a JSON array to add a TURN relay.
 const ICE_SERVERS: unknown[] = process.env.ICE_SERVERS
@@ -35,6 +53,10 @@ const ICE_SERVERS: unknown[] = process.env.ICE_SERVERS
 if (IS_PRODUCTION && !process.env.SESSION_SECRET) {
   console.warn('SESSION_SECRET is not set; sessions will not survive a restart.');
 }
+if (IS_PRODUCTION && !process.env.ADMIN_PASSWORD) {
+  console.warn('ADMIN_PASSWORD is not set; the admin account uses the default password. Set it, or change it from the profile page.');
+}
+ensureAdmin(ADMIN_EMAIL, process.env.ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD);
 
 const app = express();
 const server = http.createServer(app);
@@ -58,65 +80,98 @@ app.disable('x-powered-by');
 app.use(sessionMiddleware);
 app.use(express.json({ limit: '10kb' }));
 
-// ---------- Auth ----------
+// ---------- Helpers ----------
 
-// A small in-memory limiter so passwords can't be brute-forced.
-const attempts = new Map<string, { count: number; resetAt: number }>();
-function rateLimit(req: Request, res: Response, next: NextFunction) {
-  const key = req.ip ?? 'unknown';
-  const now = Date.now();
-  const entry = attempts.get(key);
-  if (!entry || entry.resetAt < now) {
-    attempts.set(key, { count: 1, resetAt: now + 15 * 60 * 1000 });
-    return next();
-  }
-  if (++entry.count > 20) {
-    res.status(429).json({ error: 'Too many attempts. Try again in a few minutes.' });
-    return;
-  }
+function fail(res: Response, status: number, error: string) {
+  res.status(status).json({ error });
+}
+
+/** A small in-memory limiter: at most `max` hits per key per window. */
+function limiter(max: number, windowMs: number, keyOf: (req: Request) => string) {
+  const hits = new Map<string, { count: number; resetAt: number }>();
+  return (req: Request, res: Response, next: NextFunction) => {
+    const key = keyOf(req);
+    const now = Date.now();
+    const entry = hits.get(key);
+    if (!entry || entry.resetAt < now) {
+      hits.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+    if (++entry.count > max) return fail(res, 429, 'Too many attempts. Try again in a few minutes.');
+    next();
+  };
+}
+
+const authLimit = limiter(20, 15 * 60 * 1000, req => req.ip ?? 'unknown');
+const passcodeLimit = limiter(10, 15 * 60 * 1000, req => `${req.session.userId}:${req.params.roomId}`);
+
+function text(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function currentUser(req: Request): User | null {
+  return req.session.userId ? getUser(req.session.userId) : null;
+}
+
+function requireUser(req: Request, res: Response, next: NextFunction) {
+  const user = currentUser(req);
+  if (!user) return fail(res, 401, 'Not signed in.');
+  res.locals.user = user;
   next();
+}
+
+function userOf(res: Response): User {
+  return res.locals.user as User;
 }
 
 function startSession(req: Request, res: Response, user: User) {
   req.session.regenerate(err => {
-    if (err) {
-      res.status(500).json({ error: 'Could not start a session.' });
-      return;
-    }
-    req.session.user = user;
+    if (err) return fail(res, 500, 'Could not start a session.');
+    req.session.userId = user.id;
     res.json(user);
   });
 }
 
-function field(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
+/** The room without its passcode. */
+function publicView(room: Room | PrivateRoom): Room {
+  const { id, kind, name, description, emoji, ownerId, ownerName } = room;
+  return kind === 'private' ? { id, kind, name, description, emoji, ownerId, ownerName } : { id, kind, name, description, emoji };
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function findRoom(id: string): Room | PrivateRoom | null {
+  return getPublicRoom(id) ?? getPrivateRoom(id);
+}
 
-app.post('/api/auth/signup', rateLimit, (req, res) => {
-  const name = field(req.body?.name);
-  const email = field(req.body?.email);
+function canManage(room: PrivateRoom, user: User): boolean {
+  return user.isAdmin || room.ownerId === user.id;
+}
+
+// ---------- Auth ----------
+
+app.post('/api/auth/signup', authLimit, (req, res) => {
+  const name = normalizeName(text(req.body?.name));
+  const email = text(req.body?.email);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
-  if (!name || name.length > 40) return void res.status(400).json({ error: 'Please enter a name (up to 40 characters).' });
-  if (!EMAIL_PATTERN.test(email)) return void res.status(400).json({ error: 'Please enter a valid email address.' });
-  if (password.length < 8) return void res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  const nameError = validateName(name);
+  if (nameError) return fail(res, 400, nameError);
+  if (!EMAIL_PATTERN.test(email)) return fail(res, 400, 'Please enter a valid email address.');
+  if (password.length < PASSWORD_MIN) return fail(res, 400, `Password must be at least ${PASSWORD_MIN} characters.`);
 
-  const user = createUser(name, email, password);
-  if (!user) return void res.status(409).json({ error: 'That email is already registered. Try signing in.' });
-  startSession(req, res, user);
+  const result = createUser(name, email, password);
+  if ('error' in result) {
+    return fail(res, 409, result.error === 'email-taken'
+      ? 'That email is already registered. Try signing in.'
+      : `"${name}" is taken. Try another display name.`);
+  }
+  startSession(req, res, result.user);
 });
 
-app.post('/api/auth/login', rateLimit, (req, res) => {
+app.post('/api/auth/login', authLimit, (req, res) => {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
-  const user = authenticate(field(req.body?.email), password);
-  if (!user) return void res.status(401).json({ error: 'Incorrect email or password.' });
+  const user = authenticate(text(req.body?.email), password);
+  if (!user) return fail(res, 401, 'Incorrect email or password.');
   startSession(req, res, user);
-});
-
-app.post('/api/auth/guest', (req, res) => {
-  startSession(req, res, { name: `Guest ${crypto.randomInt(1000, 10000)}`, guest: true });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -126,35 +181,131 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
-// ---------- API ----------
+// ---------- Profile ----------
 
-function requireUser(req: Request, res: Response, next: NextFunction) {
-  if (req.session.user) return next();
-  res.status(401).json({ error: 'Not signed in.' });
-}
-
-app.get('/api/me', requireUser, (req, res) => {
-  res.json(req.session.user);
+app.get('/api/me', requireUser, (_req, res) => {
+  res.json(userOf(res));
 });
+
+app.patch('/api/me', requireUser, (req, res) => {
+  const user = userOf(res);
+  const name = normalizeName(text(req.body?.name));
+  const nameError = validateName(name);
+  if (nameError) return fail(res, 400, nameError);
+  if (!renameUser(user.id, name)) return fail(res, 409, `"${name}" is taken. Try another display name.`);
+  res.json(getUser(user.id));
+});
+
+app.post('/api/me/password', requireUser, authLimit, (req, res) => {
+  const user = userOf(res);
+  const current = typeof req.body?.currentPassword === 'string' ? req.body.currentPassword : '';
+  const next = typeof req.body?.newPassword === 'string' ? req.body.newPassword : '';
+  if (next.length < PASSWORD_MIN) return fail(res, 400, `New password must be at least ${PASSWORD_MIN} characters.`);
+  if (!changePassword(user.id, current, next)) return fail(res, 403, 'Your current password is incorrect.');
+  // Sign out other devices, and give this one a fresh session id.
+  endOtherSessions(user.id, req.sessionID);
+  startSession(req, res, user);
+});
+
+app.get('/api/users/name-available', limiter(120, 60 * 1000, req => req.ip ?? 'unknown'), (req, res) => {
+  const name = normalizeName(text(req.query.name));
+  const error = validateName(name);
+  res.json({ available: !error && isNameAvailable(name, req.session.userId), error });
+});
+
+app.get('/api/avatars/:seed', (req, res) => {
+  const seed = String(req.params.seed).replace(/\.svg$/, '');
+  if (!/^[\w-]{1,64}$/.test(seed)) return fail(res, 400, 'Invalid avatar.');
+  res.set('Cache-Control', 'public, max-age=31536000, immutable').type('image/svg+xml').send(avatarSvg(seed));
+});
+
+// ---------- Rooms ----------
+
+function lobbyFor(user: User | null): LobbyRooms {
+  return {
+    public: PUBLIC_ROOMS.map(room => summarize(room, { withMembers: Boolean(user) })),
+    private: user ? listPrivateRooms(user).map(room => summarize(publicView(room))) : [],
+  };
+}
 
 // Public, so the landing page can show what's live; names are only shared with signed-in users.
 app.get('/api/rooms', (req, res) => {
-  res.json(summaries({ withMembers: Boolean(req.session.user) }));
+  res.json(lobbyFor(currentUser(req)));
+});
+
+app.post('/api/rooms', requireUser, (req, res) => {
+  const user = userOf(res);
+  const name = text(req.body?.name).replace(/\s+/g, ' ');
+  const description = text(req.body?.description).replace(/\s+/g, ' ');
+  const emoji = ROOM_EMOJIS.includes(req.body?.emoji) ? req.body.emoji : ROOM_EMOJIS[0];
+  const passcode = text(req.body?.passcode);
+
+  if (!name || name.length > ROOM_NAME_MAX) return fail(res, 400, `Give the room a name (up to ${ROOM_NAME_MAX} characters).`);
+  if (description.length > ROOM_DESCRIPTION_MAX) return fail(res, 400, `Keep the description under ${ROOM_DESCRIPTION_MAX} characters.`);
+  if (!isValidPasscode(passcode)) return fail(res, 400, 'The passcode must be exactly 6 digits.');
+  if (!user.isAdmin && countOwnedRooms(user.id) >= MAX_PRIVATE_ROOMS_PER_USER) {
+    return fail(res, 403, `You can have up to ${MAX_PRIVATE_ROOMS_PER_USER} private rooms. Delete one to make another.`);
+  }
+
+  const room = createPrivateRoom(user.id, { name, description, emoji, passcode });
+  broadcastLobby();
+  res.status(201).json({ room: publicView(room), locked: false, canManage: true, passcode: room.passcode } satisfies RoomDetails);
 });
 
 app.get('/api/rooms/:roomId', requireUser, (req, res) => {
-  const room = getRoom(String(req.params.roomId));
-  if (!room) return void res.status(404).json({ error: 'Room not found.' });
-  res.json(room);
+  const user = userOf(res);
+  const room = findRoom(String(req.params.roomId));
+  if (!room) return fail(res, 404, 'Room not found.');
+  if (room.kind === 'public') return res.json({ room, locked: false, canManage: false } satisfies RoomDetails);
+
+  const priv = room as PrivateRoom;
+  const manage = canManage(priv, user);
+  res.json({
+    room: publicView(priv),
+    locked: !hasRoomAccess(priv, user),
+    canManage: manage,
+    passcode: manage ? priv.passcode : undefined,
+  } satisfies RoomDetails);
+});
+
+app.post('/api/rooms/:roomId/unlock', requireUser, passcodeLimit, (req, res) => {
+  const user = userOf(res);
+  const room = getPrivateRoom(String(req.params.roomId));
+  if (!room) return fail(res, 404, 'Room not found.');
+  const passcode = text(req.body?.passcode);
+  const expected = Buffer.from(room.passcode);
+  const given = Buffer.from(passcode.padEnd(expected.length).slice(0, expected.length));
+  if (!isValidPasscode(passcode) || !crypto.timingSafeEqual(expected, given)) {
+    return fail(res, 403, "That passcode isn't right. Check with whoever shared the room.");
+  }
+  grantRoomAccess(room.id, user.id);
+  broadcastLobby();
+  res.status(204).end();
+});
+
+app.delete('/api/rooms/:roomId', requireUser, (req, res) => {
+  const user = userOf(res);
+  const room = getPrivateRoom(String(req.params.roomId));
+  if (!room) return fail(res, 404, 'Room not found.');
+  if (!canManage(room, user)) return fail(res, 403, 'Only the owner can delete this room.');
+
+  for (const id of memberIds(room.id)) {
+    const socket = io.sockets.sockets.get(id);
+    if (!socket) continue;
+    socket.emit('room deleted');
+    leaveRoom(socket);
+  }
+  clearChat(room.id);
+  deletePrivateRoom(room.id);
+  broadcastLobby();
+  res.status(204).end();
 });
 
 app.get('/api/ice-servers', requireUser, (_req, res) => {
   res.json(ICE_SERVERS);
 });
 
-app.use('/api', (_req, res) => {
-  res.status(404).json({ error: 'Not found.' });
-});
+app.use('/api', (_req, res) => fail(res, 404, 'Not found.'));
 
 // ---------- Client ----------
 
@@ -175,42 +326,55 @@ if (IS_PRODUCTION && !fs.existsSync(path.join(CLIENT_DIR, 'index.html'))) {
 io.engine.use(sessionMiddleware);
 
 io.use((socket, next) => {
-  const { session } = socket.request as Request;
-  const user = session?.user;
-  if (!user) return next(new Error('unauthorized'));
-  socket.data.user = user;
-  socket.data.userKey = user.id !== undefined ? `user:${user.id}` : `guest:${session.id}`;
+  const userId = (socket.request as Request).session?.userId;
+  if (!userId || !getUser(userId)) return next(new Error('unauthorized'));
+  socket.data.userId = userId;
   next();
 });
 
-function broadcastRooms() {
-  io.to(LOBBY).emit('rooms', summaries());
+function broadcastLobby() {
+  for (const id of io.sockets.adapter.rooms.get(LOBBY) ?? []) {
+    const socket = io.sockets.sockets.get(id);
+    if (socket) socket.emit('rooms', lobbyFor(getUser(socket.data.userId)));
+  }
 }
-
-type AppSocket = Parameters<Parameters<typeof io.on>[1]>[0];
 
 function leaveRoom(socket: AppSocket) {
   const roomId = socket.data.roomId;
   if (!roomId) return;
   socket.data.roomId = undefined;
+  socket.data.roomOwnerId = undefined;
   socket.leave(roomId);
   const newHost = removeMember(roomId, socket.id);
   io.to(roomId).emit('member left', socket.id);
   if (newHost) io.to(roomId).emit('host changed', newHost);
-  broadcastRooms();
+  broadcastLobby();
 }
 
-io.on('connection', socket => {
+/** Room hosts, private-room owners and admins can mute people. */
+function canModerate(socket: AppSocket): boolean {
+  const room = socket.data.roomId ? getRoomState(socket.data.roomId) : undefined;
+  if (!room) return false;
+  const user = getUser(socket.data.userId);
+  return room.hostId === socket.id || Boolean(user?.isAdmin) || socket.data.roomOwnerId === socket.data.userId;
+}
+
+io.on('connection', (socket: AppSocket) => {
   socket.on('watch rooms', () => {
     socket.join(LOBBY);
-    socket.emit('rooms', summaries());
+    socket.emit('rooms', lobbyFor(getUser(socket.data.userId)));
   });
 
   socket.on('join', ({ roomId, muted }) => {
-    if (!getRoom(roomId) || socket.data.roomId) return;
+    if (socket.data.roomId) return;
+    const user = getUser(socket.data.userId);
+    const room = findRoom(roomId);
+    if (!user || !room) return;
+    const priv = room.kind === 'private' ? (room as PrivateRoom) : null;
+    if (priv && !hasRoomAccess(priv, user)) return void socket.emit('room locked');
 
     // One seat per person: a newer tab or device takes over from the older one.
-    const previousId = findByUserKey(roomId, socket.data.userKey);
+    const previousId = findByUserId(roomId, user.id);
     const previous = previousId ? io.sockets.sockets.get(previousId) : undefined;
     const wasHost = previousId !== undefined && getRoomState(roomId)?.hostId === previousId;
     if (previous) {
@@ -220,19 +384,25 @@ io.on('connection', socket => {
       removeMember(roomId, previousId); // stale entry with no live connection
     }
 
-    const member = { id: socket.id, name: socket.data.user.name, muted: Boolean(muted), userKey: socket.data.userKey };
-    const room = addMember(roomId, member);
-    if (!room) return void socket.emit('room full');
-    if (wasHost && room.hostId !== socket.id) {
-      room.hostId = socket.id; // the host keeps hosting when they switch tabs
+    const member: Member = {
+      id: socket.id, userId: user.id, name: user.name, avatarSeed: user.avatarSeed, isAdmin: user.isAdmin, muted: Boolean(muted),
+    };
+    const state = addMember(roomId, member);
+    if (!state) return void socket.emit('room full');
+
+    // Hosts keep hosting when they switch tabs, and owners always host their own rooms.
+    if ((wasHost || priv?.ownerId === user.id) && state.hostId !== socket.id) {
+      state.hostId = socket.id;
       socket.to(roomId).emit('host changed', socket.id);
     }
 
     socket.data.roomId = roomId;
+    socket.data.roomOwnerId = priv?.ownerId;
     socket.join(roomId);
-    socket.emit('joined', { selfId: socket.id, hostId: room.hostId, members: [...room.members.values()].map(toMember) });
-    socket.to(roomId).emit('member joined', toMember(member));
-    broadcastRooms();
+    socket.emit('joined', { selfId: socket.id, hostId: state.hostId, members: [...state.members.values()] });
+    if (priv) socket.emit('chat history', chatHistory(roomId));
+    socket.to(roomId).emit('member joined', member);
+    broadcastLobby();
   });
 
   // WebRTC signalling is only relayed between members of the same room.
@@ -251,7 +421,29 @@ io.on('connection', socket => {
 
   socket.on('host mute', target => {
     const room = socket.data.roomId ? getRoomState(socket.data.roomId) : undefined;
-    if (room?.hostId === socket.id && room.members.has(target)) io.to(target).emit('force muted');
+    if (target !== socket.id && room?.members.has(target) && canModerate(socket)) io.to(target).emit('force muted');
+  });
+
+  socket.on('chat send', (raw, ack) => {
+    const respond = typeof ack === 'function' ? ack : () => {};
+    const roomId = socket.data.roomId;
+    const member = roomId ? getRoomState(roomId)?.members.get(socket.id) : undefined;
+    if (!roomId || !member || !socket.data.roomOwnerId) return respond({ ok: false, error: 'Chat is only available in private rooms.' });
+
+    const message = typeof raw === 'string' ? raw.trim() : '';
+    if (!message) return respond({ ok: false, error: 'Write something first.' });
+    if (message.length > CHAT_MESSAGE_MAX) return respond({ ok: false, error: `Keep messages under ${CHAT_MESSAGE_MAX} characters.` });
+
+    // At most 5 messages every 5 seconds.
+    const now = Date.now();
+    const recent = (socket.data.chatTimes ?? []).filter(t => now - t < 5000);
+    if (recent.length >= 5) return respond({ ok: false, error: "You're sending messages too quickly." });
+    socket.data.chatTimes = [...recent, now];
+
+    const author = { userId: member.userId, name: member.name, avatarSeed: member.avatarSeed };
+    const sent = addChatMessage(roomId, author, message, id => io.to(roomId).emit('chat expired', [id]));
+    io.to(roomId).emit('chat message', sent);
+    respond({ ok: true });
   });
 
   socket.on('disconnecting', () => leaveRoom(socket));

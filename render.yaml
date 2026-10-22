@@ -12,3 +12,6 @@ services:
         value: "24"
       - key: SESSION_SECRET
         generateValue: true
+      # Password for the built-in admin (sarojp.dev@gmail.com); Render asks for it on setup.
+      - key: ADMIN_PASSWORD
+        sync: false

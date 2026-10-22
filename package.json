@@ -18,6 +18,8 @@
     "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.server.json"
   },
   "dependencies": {
+    "@dicebear/core": "^10.7.0",
+    "@dicebear/styles": "^10.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.2",
     "express": "^5.3.0",

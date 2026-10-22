@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Member, Signal } from '../../shared/protocol.ts';
+import type { ChatMessage, Member, Signal } from '../../shared/protocol.ts';
 import { api } from './api.ts';
 import { createSocket, type AppSocket } from './socket.ts';
 
-export type RoomStatus = 'connecting' | 'live' | 'reconnecting' | 'full' | 'elsewhere' | 'error';
+export type RoomStatus = 'connecting' | 'live' | 'reconnecting' | 'full' | 'elsewhere' | 'locked' | 'deleted' | 'error';
+
+/** A chat message with its local disappearance time. */
+export interface LiveMessage extends ChatMessage {
+  expiresAt: number;
+}
 /** The mic is only requested the first time you unmute, so listeners never see a permission prompt. */
 export type MicState = 'idle' | 'pending' | 'ready' | 'denied';
 
@@ -26,6 +31,7 @@ export function useAudioRoom(roomId: string) {
   const [streams, setStreams] = useState<Record<string, MediaStream>>({});
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [messages, setMessages] = useState<LiveMessage[]>([]);
 
   const socketRef = useRef<AppSocket | null>(null);
   const micRef = useRef<MediaStreamTrack | null>(null);
@@ -109,14 +115,25 @@ export function useAudioRoom(roomId: string) {
         socket.disconnect();
       });
 
-      // You opened this room in another tab or device; this one steps aside.
-      socket.on('joined elsewhere', () => {
-        setStatus('elsewhere');
+      function stopWith(next: RoomStatus) {
+        setStatus(next);
+        setMessages([]);
         socket.disconnect();
         micRef.current?.stop();
         micRef.current = null;
         setMicState('idle');
-      });
+      }
+
+      // You opened this room in another tab or device; this one steps aside.
+      socket.on('joined elsewhere', () => stopWith('elsewhere'));
+      socket.on('room deleted', () => stopWith('deleted'));
+      socket.on('room locked', () => stopWith('locked'));
+
+      // Disappearing chat (private rooms only).
+      const withDeadline = (m: ChatMessage): LiveMessage => ({ ...m, expiresAt: Date.now() + m.expiresIn });
+      socket.on('chat history', history => setMessages(history.map(withDeadline)));
+      socket.on('chat message', message => setMessages(prev => [...prev, withDeadline(message)]));
+      socket.on('chat expired', ids => setMessages(prev => prev.filter(m => !ids.includes(m.id))));
 
       // We just joined: the newcomer calls everyone who was already here.
       socket.on('joined', async ({ selfId, hostId, members }) => {
@@ -240,6 +257,24 @@ export function useAudioRoom(roomId: string) {
     socketRef.current?.emit('host mute', id);
   }, []);
 
+  // Drop messages locally at their deadline too, in case an expiry event is missed while offline.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const next = Math.min(...messages.map(m => m.expiresAt));
+    const timer = setTimeout(() => setMessages(prev => prev.filter(m => m.expiresAt > Date.now())), Math.max(0, next - Date.now()) + 50);
+    return () => clearTimeout(timer);
+  }, [messages]);
+
+  const sendMessage = useCallback((text: string) => new Promise<void>((resolve, reject) => {
+    const socket = socketRef.current;
+    if (!socket?.connected) return reject(new Error('Not connected.'));
+    socket.timeout(5000).emit('chat send', text, (err, result) => {
+      if (err) reject(new Error('Message not sent. Check your connection.'));
+      else if (!result.ok) reject(new Error(result.error));
+      else resolve();
+    });
+  }), []);
+
   const unlockAudio = useCallback(() => {
     peersRef.current.forEach(peer => peer.audio.play().catch(() => {}));
     setAudioBlocked(false);
@@ -262,5 +297,7 @@ export function useAudioRoom(roomId: string) {
     setMuted,
     muteMember,
     unlockAudio,
+    messages,
+    sendMessage,
   };
 }

@@ -2,67 +2,58 @@ import type { Member, Room, RoomSummary } from '../shared/protocol.ts';
 
 export const MAX_ROOM_SIZE = 8;
 
-export const ROOMS: Room[] = [
-  { id: 'bollywood-pop', name: 'Bollywood Pop Songs', emoji: '🎤', description: 'Sing along, request songs and argue about the best decade.' },
-  { id: 'just-for-fun', name: 'Just for Fun', emoji: '🎲', description: 'No agenda. Games, banter and whatever comes up.' },
-  { id: 'musafir-stories', name: 'The Musafir Stories', emoji: '🧭', description: 'Travel tales from the road, the rails and the mountains.' },
-  { id: 'political-debates', name: 'Political Debates', emoji: '🏛️', description: 'Civil, sharp discussion on the issues of the day.' },
-  { id: 'finance-society', name: 'Finance Society', emoji: '📈', description: 'Markets, money habits and investing for beginners.' },
-  { id: 'mahabharata', name: 'Learning Mahabharata in English', emoji: '📜', description: 'One episode of the epic at a time, retold in English.' },
-  { id: 'chit-chat', name: 'Chit Chat', emoji: '☕', description: 'Grab a chai and say hi to whoever is around.' },
-  { id: 'standup-comedy', name: 'Standup Comedy', emoji: '🎭', description: 'Open mic. Try your bits on a friendly crowd.' },
-  { id: 'party-music', name: 'Party Music Room', emoji: '🪩', description: 'Turn it up. Share tracks and hype the room.' },
-  { id: 'musicians-assembly', name: "Musicians' Assembly", emoji: '🎸', description: 'Jam, swap gear tips and get feedback on your songs.' },
+export const PUBLIC_ROOMS: Room[] = [
+  { id: 'bollywood-pop', kind: 'public', name: 'Bollywood Pop Songs', emoji: '🎤', description: 'Sing along, request songs and argue about the best decade.' },
+  { id: 'just-for-fun', kind: 'public', name: 'Just for Fun', emoji: '🎲', description: 'No agenda. Games, banter and whatever comes up.' },
+  { id: 'musafir-stories', kind: 'public', name: 'The Musafir Stories', emoji: '🧭', description: 'Travel tales from the road, the rails and the mountains.' },
+  { id: 'political-debates', kind: 'public', name: 'Political Debates', emoji: '🏛️', description: 'Civil, sharp discussion on the issues of the day.' },
+  { id: 'finance-society', kind: 'public', name: 'Finance Society', emoji: '📈', description: 'Markets, money habits and investing for beginners.' },
+  { id: 'mahabharata', kind: 'public', name: 'Learning Mahabharata in English', emoji: '📜', description: 'One episode of the epic at a time, retold in English.' },
+  { id: 'chit-chat', kind: 'public', name: 'Chit Chat', emoji: '☕', description: 'Grab a chai and say hi to whoever is around.' },
+  { id: 'standup-comedy', kind: 'public', name: 'Standup Comedy', emoji: '🎭', description: 'Open mic. Try your bits on a friendly crowd.' },
+  { id: 'party-music', kind: 'public', name: 'Party Music Room', emoji: '🪩', description: 'Turn it up. Share tracks and hype the room.' },
+  { id: 'musicians-assembly', kind: 'public', name: "Musicians' Assembly", emoji: '🎸', description: 'Jam, swap gear tips and get feedback on your songs.' },
 ];
 
-const roomsById = new Map(ROOMS.map(room => [room.id, room]));
+const publicById = new Map(PUBLIC_ROOMS.map(room => [room.id, room]));
 
-/** A member plus the stable user key used to stop one person joining the same room twice. */
-export interface Occupant extends Member {
-  userKey: string;
+export function getPublicRoom(id: string): Room | undefined {
+  return publicById.get(id);
 }
 
 interface RoomState {
   hostId: string;
-  members: Map<string, Occupant>;
+  members: Map<string, Member>;
 }
 
+// Who is in each room right now. Rooms themselves (public or private) live elsewhere;
+// this only tracks connections, so an empty private room simply has no entry here.
 const state = new Map<string, RoomState>();
-
-export function getRoom(id: string): Room | undefined {
-  return roomsById.get(id);
-}
 
 export function getRoomState(id: string): RoomState | undefined {
   return state.get(id);
 }
 
-export function summaries({ withMembers = true } = {}): RoomSummary[] {
-  return ROOMS.map(room => {
-    const members = [...(state.get(room.id)?.members.values() ?? [])];
-    return {
-      ...room,
-      capacity: MAX_ROOM_SIZE,
-      listeners: members.length,
-      members: withMembers ? members.map(({ id, name }) => ({ id, name })) : [],
-    };
-  });
-}
-
-export function toMember({ id, name, muted }: Occupant): Member {
-  return { id, name, muted };
+export function summarize(room: Room, { withMembers = true } = {}): RoomSummary {
+  const members = [...(state.get(room.id)?.members.values() ?? [])];
+  return {
+    ...room,
+    capacity: MAX_ROOM_SIZE,
+    listeners: members.length,
+    members: withMembers ? members.map(({ id, name, avatarSeed }) => ({ id, name, avatarSeed })) : [],
+  };
 }
 
 /** The connection id this user already has in the room, if any. */
-export function findByUserKey(roomId: string, userKey: string): string | undefined {
+export function findByUserId(roomId: string, userId: number): string | undefined {
   for (const member of state.get(roomId)?.members.values() ?? []) {
-    if (member.userKey === userKey) return member.id;
+    if (member.userId === userId) return member.id;
   }
   return undefined;
 }
 
 /** Adds a member; returns the room state, or null if the room is full. */
-export function addMember(roomId: string, member: Occupant): RoomState | null {
+export function addMember(roomId: string, member: Member): RoomState | null {
   let room = state.get(roomId);
   if (room && room.members.size >= MAX_ROOM_SIZE) return null;
   if (!room) {
@@ -88,4 +79,9 @@ export function removeMember(roomId: string, memberId: string): string | null {
     return room.hostId;
   }
   return null;
+}
+
+/** Ids of everyone currently connected to a room. */
+export function memberIds(roomId: string): string[] {
+  return [...(state.get(roomId)?.members.keys() ?? [])];
 }
