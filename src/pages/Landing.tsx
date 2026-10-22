@@ -103,8 +103,8 @@ const MARQUEE = ['Bollywood Pop', 'Standup Comedy', 'Mahabharata', 'Finance Soci
 
 const RULES = [
   ['01', 'Nothing gets recorded.', 'Voices travel straight between browsers. We never hear them, and we couldn’t play them back if we tried.'],
-  ['02', 'Six digits keep strangers out.', 'Make a private room, pick a passcode, send it to your people. It’s yours until you delete it, even when everyone’s gone home.'],
-  ['03', 'Chats evaporate.', 'In private rooms, every message fades out five minutes after it’s sent. Say the thing.'],
+  ['02', 'The secret code keeps the strangers out.', 'Make a private room, pick a passcode, send it to your people. It’s yours until you delete it, even when everyone’s gone home.'],
+  ['03', 'Chats disappear.', 'In private rooms, every message fades out five minutes after it’s been sent. So, go all out!'],
 ] as const;
 
 export default function Landing() {
@@ -164,29 +164,21 @@ export default function Landing() {
       <FlyThroughHero
         beats={[
           <div className="text-center">
-            <p className="mb-6 text-xs font-semibold tracking-[0.4em] text-violet-200/80 uppercase">live audio, under the stars</p>
             <h1 className="text-[clamp(3rem,10vw,8.5rem)] leading-[0.92] font-extralight tracking-tight [text-shadow:0_6px_40px_rgb(0_0_0/0.45)]">
               Meet new people<br /><span className="font-black italic">every day.</span>
             </h1>
             <p className="mx-auto mt-7 max-w-md text-base text-white/80 sm:text-lg">Listen to live conversations from all around the world.</p>
           </div>,
-          <div className="text-center">
+          <div className="text-center h-[60vh]">
             <h2 className="text-[clamp(4rem,17vw,15rem)] leading-[0.8] font-black tracking-tighter uppercase">
               <span className="text-outline block text-white/90">Say it</span>
               <span className="block bg-gradient-to-b from-white to-violet-300 bg-clip-text text-transparent">out loud.</span>
             </h2>
-            <p className="mx-auto mt-8 max-w-sm text-base text-white/75 sm:text-lg">No posts. No likes. No algorithm deciding who gets to hear you.</p>
           </div>,
           <div className="text-center">
             <h2 className="text-[clamp(2.8rem,8vw,7rem)] leading-[0.95] font-black tracking-tight [text-shadow:0_6px_40px_rgb(0_0_0/0.5)]">
-              The mountains<br /><span className="font-extralight italic">are listening.</span>
+              The mountains<br /><span className="font-extralight italic">are there to listen.</span>
             </h2>
-            {liveCount !== null && (
-              <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-night-900/50 px-4 py-1.5 text-sm font-medium backdrop-blur">
-                <span className="size-2 animate-live rounded-full bg-live" />
-                {liveCount === 0 ? 'Every room is quiet. Go be the first voice.' : `${liveCount} ${liveCount === 1 ? 'voice' : 'voices'} up here right now`}
-              </p>
-            )}
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               {primaryCta}
               {!user && <Button size="lg" variant="glass" onClick={() => setAuthMode('login')}>I've been here before</Button>}
@@ -201,8 +193,8 @@ export default function Landing() {
           <p className="text-xs font-bold tracking-[0.35em] text-accent uppercase">Inside a room</p>
           <h2 className="mt-4 text-5xl leading-[0.95] font-black tracking-tight sm:text-6xl">Pull up<br />a rock.</h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-white/65">
-            Everyone sits in a circle around the moon. Whoever's talking glows. Tap the mic when you've got something to say, tap it again when
-            you're done. <span className="text-white">That's the whole app.</span>
+            Everyone sits in a circle. Tap the mic when you've got something to say, tap it again when
+            you're done.
           </p>
           <p className="mt-4 max-w-md text-white/45">Up to eight people per room. Whoever walks in first hosts, and the host holds the mute button.</p>
         </div>
@@ -227,7 +219,7 @@ export default function Landing() {
 
       {/* House rules */}
       <section className="mx-auto max-w-6xl px-4 py-28 sm:px-6">
-        <h2 className="max-w-2xl text-5xl leading-[0.95] font-black tracking-tight sm:text-6xl">House rules<br /><span className="font-extralight italic text-white/60">of the mountain.</span></h2>
+        <h2 className="max-w-2xl text-5xl leading-[0.95] font-black tracking-tight sm:text-6xl">Space rules <br /></h2>
         <ol className="mt-16 grid gap-px overflow-hidden rounded-3xl bg-white/10 md:grid-cols-3">
           {RULES.map(([n, title, body]) => (
             <li key={n} className="group bg-night-900 p-8 transition-colors hover:bg-night-800 sm:p-10">
@@ -244,15 +236,14 @@ export default function Landing() {
         <MountainScene pointer anchor="horizon" className="-z-10" />
         <div className="-mt-[18vh] px-4">
           <h2 className="text-[clamp(3rem,9vw,7.5rem)] leading-[0.9] font-black tracking-tight [text-shadow:0_6px_40px_rgb(0_0_0/0.5)]">
-            See you<br /><span className="font-extralight italic">up there.</span>
+            See you<br /><span className="font-extralight italic">up at my space.</span>
           </h2>
           <div className="mt-10 flex justify-center">{primaryCta}</div>
         </div>
       </section>
 
       <footer className="border-t border-white/5 px-4 py-10 text-center text-sm text-white/40">
-        <p>AudioSpace started as a second-year college project. Years later, it got a second life.</p>
-        <p className="mt-1 text-white/25">© {new Date().getFullYear()} AudioSpace</p>
+        <p className="mt-1 text-white/25">AudioSpace - A space for conversations.</p>
       </footer>
 
       <AuthDialog mode={authMode} onModeChange={setAuthMode} />

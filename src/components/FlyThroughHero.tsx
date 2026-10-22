@@ -123,7 +123,7 @@ export default function FlyThroughHero({ beats }: FlyThroughHeroProps) {
         </div>
 
         <div ref={cue} className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-1 text-[11px] font-semibold tracking-[0.35em] text-white/70 uppercase">
-          Scroll to fly in
+          Scroll to dive in
           <ChevronDown className="size-5 animate-bounce" />
         </div>
       </div>
