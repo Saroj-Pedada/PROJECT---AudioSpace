@@ -29,7 +29,7 @@ To try a room with yourself, open a second browser or a private window and enter
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Server (auto-restart) + Vite dev server |
-| `npm run build` | Build the client into `dist/` |
+| `npm run build` | Build the client into `dist/` (also runs automatically after `npm install`) |
 | `npm start` | Production server: serves `dist/` and the API on `$PORT` |
 | `npm run typecheck` | Type-check the client and the server |
 
@@ -57,6 +57,8 @@ public/      Static assets (optimised WebP artwork, favicons)
 ## Deploy to Render
 
 `render.yaml` defines a free web service. In Render, choose **New → Blueprint** and select this repo.
+
+If you create a plain **Web Service** instead, use Build Command `npm install` (it builds the client through `postinstall`) and Start Command `npm start`.
 
 On the free plan:
 

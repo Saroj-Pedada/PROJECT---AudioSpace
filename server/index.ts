@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import http from 'node:http';
@@ -157,7 +158,12 @@ app.use('/api', (_req, res) => {
 
 // ---------- Client ----------
 
-if (IS_PRODUCTION) {
+if (IS_PRODUCTION && !fs.existsSync(path.join(CLIENT_DIR, 'index.html'))) {
+  console.error(`Client build not found at ${CLIENT_DIR}. Run "npm run build" (or "npm install") before "npm start".`);
+  app.use((_req, res) => {
+    res.status(503).type('text').send('AudioSpace is not built yet. Run "npm run build" during deploy.');
+  });
+} else if (IS_PRODUCTION) {
   app.use('/assets', express.static(path.join(CLIENT_DIR, 'assets'), { immutable: true, maxAge: '1y' }));
   app.use(express.static(CLIENT_DIR, { index: false, maxAge: '1d' }));
   app.get('/{*splat}', (_req, res) => res.sendFile(path.join(CLIENT_DIR, 'index.html')));
