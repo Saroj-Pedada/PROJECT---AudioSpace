@@ -3,12 +3,11 @@ services:
     name: audiospace
     runtime: node
     plan: free
-    buildCommand: npm ci
+    # devDependencies hold the build tooling (Vite, Tailwind, TypeScript).
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /api/rooms
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: NODE_VERSION
         value: "24"
       - key: SESSION_SECRET

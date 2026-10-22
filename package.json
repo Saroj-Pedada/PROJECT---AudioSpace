@@ -1,21 +1,42 @@
 {
   "name": "audiospace",
-  "version": "2.0.0",
-  "description": "Drop-in audio rooms, a Clubhouse-style clone built with Express, Socket.IO and WebRTC.",
+  "version": "3.0.0",
+  "description": "Drop-in live audio rooms, a Clubhouse-style app built with React, Express, Socket.IO and WebRTC.",
   "private": true,
   "license": "MIT",
-  "type": "commonjs",
-  "main": "server.js",
+  "type": "module",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "concurrently -k -n server,client -c magenta,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "node --watch --disable-warning=ExperimentalWarning server/index.ts",
+    "dev:client": "vite",
+    "build": "vite build",
+    "start": "NODE_ENV=production node --disable-warning=ExperimentalWarning server/index.ts",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.server.json"
   },
   "dependencies": {
     "express": "^5.3.0",
     "express-session": "^1.19.0",
     "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^24",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^10.0.6",
+    "lucide-react": "^1.61.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.0",
+    "socket.io-client": "^4.8.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
   }
 }

@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  /* Sampled from the original artwork: the sky gradient and the foreground mountains. */
+  --color-sky-top: #3c239d;
+  --color-sky-deep: #071f69;
+  --color-night-950: #0b0910;
+  --color-night-900: #120e14;
+  --color-night-800: #1b1620;
+  --color-night-700: #261f2d;
+
+  --color-accent: #7b61ff;
+  --color-accent-strong: #6447f5;
+  --color-live: #ff4d6d;
+  --color-speak: #4ade80;
+
+  --animate-live: live 1.6s ease-in-out infinite;
+  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+
+  @keyframes live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-svh bg-night-900 font-sans text-white antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent/60;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@utility text-outline {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.5px currentColor;
+}
+
+@utility glass {
+  @apply border border-white/15 bg-white/[0.06] shadow-2xl shadow-black/30 backdrop-blur-xl;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
